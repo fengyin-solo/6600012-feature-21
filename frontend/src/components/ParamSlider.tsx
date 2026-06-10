@@ -1,4 +1,4 @@
-import { useRef, useEffect, useCallback } from 'react'
+import { useRef, useEffect } from 'react'
 import { useSimStore } from '../store/simulation'
 
 interface MetricBadge {
@@ -9,7 +9,6 @@ interface MetricBadge {
 
 interface ParamSliderProps {
   label: string
-  paramKey: string
   value: number
   min: number
   max: number
@@ -114,11 +113,17 @@ export default function ParamSlider({
 
   const inputRef = useRef<HTMLInputElement>(null)
 
-  const onWheel = useCallback((e: React.WheelEvent) => {
-    e.preventDefault()
-    const direction = e.deltaY < 0 ? 1 : -1
-    const next = Math.min(max, Math.max(min, value + step * direction))
-    if (next !== value) onChange(next)
+  useEffect(() => {
+    const el = inputRef.current
+    if (!el) return
+    const handler = (e: WheelEvent) => {
+      e.preventDefault()
+      const direction = e.deltaY < 0 ? 1 : -1
+      const next = Math.min(max, Math.max(min, value + step * direction))
+      if (next !== value) onChange(next)
+    }
+    el.addEventListener('wheel', handler, { passive: false })
+    return () => el.removeEventListener('wheel', handler)
   }, [value, min, max, step, onChange])
 
   return (
@@ -138,7 +143,6 @@ export default function ParamSlider({
         step={step}
         value={value}
         onChange={e => onChange(Number(e.target.value))}
-        onWheel={onWheel}
         className="w-full h-1.5 rounded-full appearance-none cursor-pointer"
         style={{ accentColor: accent }}
       />

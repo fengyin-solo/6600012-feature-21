@@ -1,6 +1,7 @@
 import { useSimStore } from '../store/simulation'
 import type { SimMode } from '../types'
 import ParamSlider from './ParamSlider'
+import { shallow } from 'zustand/shallow'
 
 const MODES: { value: SimMode; label: string; icon: string }[] = [
   { value: 'gravity', label: '重力吸引', icon: '🌍' },
@@ -37,7 +38,35 @@ const ATTRACTOR_METRICS = [
 ]
 
 export default function ControlPanel() {
-  const store = useSimStore()
+  const {
+    mode,
+    gravity,
+    damping,
+    bounce,
+    attractorStrength,
+    particleCount,
+    paused,
+    slowMotion,
+    setMode,
+    setParam,
+    setParticleCount,
+    applyPreset,
+    reset,
+  } = useSimStore(s => ({
+    mode: s.mode,
+    gravity: s.gravity,
+    damping: s.damping,
+    bounce: s.bounce,
+    attractorStrength: s.attractorStrength,
+    particleCount: s.particleCount,
+    paused: s.paused,
+    slowMotion: s.slowMotion,
+    setMode: s.setMode,
+    setParam: s.setParam,
+    setParticleCount: s.setParticleCount,
+    applyPreset: s.applyPreset,
+    reset: s.reset,
+  }), shallow)
 
   return (
     <div className="w-80 bg-gray-900 border-l border-gray-700 p-4 overflow-y-auto flex flex-col gap-3">
@@ -49,9 +78,9 @@ export default function ControlPanel() {
           {MODES.map(m => (
             <button
               key={m.value}
-              onClick={() => store.setMode(m.value)}
+              onClick={() => setMode(m.value)}
               className={`px-3 py-2 rounded text-sm font-medium transition ${
-                store.mode === m.value
+                mode === m.value
                   ? 'bg-blue-600 text-white'
                   : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
               }`}
@@ -68,7 +97,7 @@ export default function ControlPanel() {
           {PRESETS.map(p => (
             <button
               key={p.id}
-              onClick={() => store.applyPreset(p.params)}
+              onClick={() => applyPreset(p.params)}
               className="px-3 py-1 bg-purple-700 hover:bg-purple-600 text-white text-xs rounded-full"
             >
               {p.name}
@@ -80,81 +109,77 @@ export default function ControlPanel() {
       <div className="space-y-3">
         <ParamSlider
           label="重力"
-          paramKey="gravity"
-          value={store.gravity}
+          value={gravity}
           min={-20}
           max={20}
-          step={0.5}
+          step={0.1}
           accent="#4ade80"
           formatValue={v => v.toFixed(1)}
-          onChange={v => store.setParam('gravity', v)}
+          onChange={v => setParam('gravity', v)}
           relatedMetrics={GRAVITY_METRICS}
         />
 
         <ParamSlider
           label="阻尼"
-          paramKey="damping"
-          value={store.damping}
+          value={damping}
           min={0}
           max={0.5}
           step={0.005}
           accent="#facc15"
           formatValue={v => v.toFixed(3)}
-          onChange={v => store.setParam('damping', v)}
+          onChange={v => setParam('damping', v)}
           relatedMetrics={DAMPING_METRICS}
         />
 
         <ParamSlider
           label="弹性"
-          paramKey="bounce"
-          value={store.bounce}
+          value={bounce}
           min={0}
           max={1}
           step={0.05}
           accent="#fb923c"
           formatValue={v => v.toFixed(2)}
-          onChange={v => store.setParam('bounce', v)}
+          onChange={v => setParam('bounce', v)}
           relatedMetrics={BOUNCE_METRICS}
         />
 
         <ParamSlider
           label="吸引力"
-          paramKey="attractorStrength"
-          value={store.attractorStrength}
+          value={attractorStrength}
           min={0}
           max={20}
           step={0.5}
           accent="#f472b6"
           formatValue={v => v.toFixed(1)}
-          onChange={v => store.setParam('attractorStrength', v)}
+          onChange={v => setParam('attractorStrength', v)}
           relatedMetrics={ATTRACTOR_METRICS}
         />
       </div>
 
       <div>
-        <label className="text-xs text-gray-400">粒子数量: {store.particleCount}</label>
+        <label className="text-xs text-gray-400">粒子数量: {particleCount}</label>
         <input type="range" min={10} max={800} step={10}
-          value={store.particleCount}
-          onChange={e => store.setParticleCount(Number(e.target.value))}
+          value={particleCount}
+          onChange={e => setParticleCount(Number(e.target.value))}
           className="w-full accent-blue-500" />
       </div>
 
       <div className="flex gap-2 mt-2">
         <button
-          onClick={() => store.setParam('paused', !store.paused)}
-          className={`flex-1 py-2 rounded font-medium text-sm ${store.paused ? 'bg-green-600' : 'bg-red-600'} text-white`}
+          onClick={() => setParam('paused', !paused)}
+          className={`flex-1 py-2 rounded font-medium text-sm ${paused ? 'bg-green-600' : 'bg-red-600'} text-white`}
         >
-          {store.paused ? '▶ 继续' : '⏸ 暂停'}
+          {paused ? '▶ 继续' : '⏸ 暂停'}
         </button>
         <button
-          onClick={() => store.setParam('slowMotion', !store.slowMotion)}
-          className={`flex-1 py-2 rounded font-medium text-sm ${store.slowMotion ? 'bg-yellow-500 text-black' : 'bg-gray-700 text-gray-300'}`}
+          onClick={() => setParam('slowMotion', !slowMotion)}
+          className={`flex-1 py-2 rounded font-medium text-sm ${slowMotion ? 'bg-yellow-500 text-black' : 'bg-gray-700 text-gray-300'}`}
         >
           🐌 慢动作
         </button>
       </div>
       <button
-        onClick={() => store.reset()}
+        onClick={() => reset()}
         className="w-full py-2 bg-gray-700 hover:bg-gray-600 text-white rounded text-sm"
       >
         🔄 重置粒子
