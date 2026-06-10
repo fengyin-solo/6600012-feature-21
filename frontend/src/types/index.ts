@@ -20,6 +20,14 @@ export interface SimulationParams {
   paused: boolean
 }
 
+export interface SimMetrics {
+  avgSpeed: number
+  avgSpread: number
+  stability: number
+}
+
+export const METRICS_HISTORY_LEN = 40
+
 export interface Preset {
   id: string
   name: string

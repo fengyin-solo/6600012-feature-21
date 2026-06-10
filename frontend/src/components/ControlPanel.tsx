@@ -1,5 +1,6 @@
 import { useSimStore } from '../store/simulation'
 import type { SimMode } from '../types'
+import ParamSlider from './ParamSlider'
 
 const MODES: { value: SimMode; label: string; icon: string }[] = [
   { value: 'gravity', label: '重力吸引', icon: '🌍' },
@@ -15,14 +16,33 @@ const PRESETS = [
   { id: 'tornado', name: '龙卷风', params: { mode: 'vortex' as SimMode, gravity: 2, attractorStrength: 12, damping: 0.02, particleCount: 400 } },
 ]
 
+const GRAVITY_METRICS = [
+  { key: 'avgSpeed' as const, label: '速度', color: 'rgb(74,222,128)' },
+  { key: 'stability' as const, label: '稳定', color: 'rgb(96,165,250)' },
+]
+
+const DAMPING_METRICS = [
+  { key: 'avgSpeed' as const, label: '速度', color: 'rgb(74,222,128)' },
+  { key: 'stability' as const, label: '稳定', color: 'rgb(96,165,250)' },
+]
+
+const BOUNCE_METRICS = [
+  { key: 'avgSpeed' as const, label: '速度', color: 'rgb(74,222,128)' },
+  { key: 'avgSpread' as const, label: '扩散', color: 'rgb(251,191,36)' },
+]
+
+const ATTRACTOR_METRICS = [
+  { key: 'avgSpread' as const, label: '扩散', color: 'rgb(251,191,36)' },
+  { key: 'stability' as const, label: '稳定', color: 'rgb(96,165,250)' },
+]
+
 export default function ControlPanel() {
   const store = useSimStore()
 
   return (
-    <div className="w-80 bg-gray-900 border-l border-gray-700 p-4 overflow-y-auto flex flex-col gap-4">
+    <div className="w-80 bg-gray-900 border-l border-gray-700 p-4 overflow-y-auto flex flex-col gap-3">
       <h2 className="text-lg font-bold text-white">粒子物理模拟器</h2>
 
-      {/* Mode */}
       <div>
         <label className="text-xs text-gray-400 block mb-1">模拟模式</label>
         <div className="grid grid-cols-2 gap-2">
@@ -42,7 +62,6 @@ export default function ControlPanel() {
         </div>
       </div>
 
-      {/* Presets */}
       <div>
         <label className="text-xs text-gray-400 block mb-1">预设场景</label>
         <div className="flex flex-wrap gap-2">
@@ -58,7 +77,60 @@ export default function ControlPanel() {
         </div>
       </div>
 
-      {/* Particle Count */}
+      <div className="space-y-3">
+        <ParamSlider
+          label="重力"
+          paramKey="gravity"
+          value={store.gravity}
+          min={-20}
+          max={20}
+          step={0.5}
+          accent="#4ade80"
+          formatValue={v => v.toFixed(1)}
+          onChange={v => store.setParam('gravity', v)}
+          relatedMetrics={GRAVITY_METRICS}
+        />
+
+        <ParamSlider
+          label="阻尼"
+          paramKey="damping"
+          value={store.damping}
+          min={0}
+          max={0.5}
+          step={0.005}
+          accent="#facc15"
+          formatValue={v => v.toFixed(3)}
+          onChange={v => store.setParam('damping', v)}
+          relatedMetrics={DAMPING_METRICS}
+        />
+
+        <ParamSlider
+          label="弹性"
+          paramKey="bounce"
+          value={store.bounce}
+          min={0}
+          max={1}
+          step={0.05}
+          accent="#fb923c"
+          formatValue={v => v.toFixed(2)}
+          onChange={v => store.setParam('bounce', v)}
+          relatedMetrics={BOUNCE_METRICS}
+        />
+
+        <ParamSlider
+          label="吸引力"
+          paramKey="attractorStrength"
+          value={store.attractorStrength}
+          min={0}
+          max={20}
+          step={0.5}
+          accent="#f472b6"
+          formatValue={v => v.toFixed(1)}
+          onChange={v => store.setParam('attractorStrength', v)}
+          relatedMetrics={ATTRACTOR_METRICS}
+        />
+      </div>
+
       <div>
         <label className="text-xs text-gray-400">粒子数量: {store.particleCount}</label>
         <input type="range" min={10} max={800} step={10}
@@ -67,43 +139,6 @@ export default function ControlPanel() {
           className="w-full accent-blue-500" />
       </div>
 
-      {/* Gravity */}
-      <div>
-        <label className="text-xs text-gray-400">重力: {store.gravity.toFixed(1)}</label>
-        <input type="range" min={-20} max={20} step={0.5}
-          value={store.gravity}
-          onChange={e => store.setParam('gravity', Number(e.target.value))}
-          className="w-full accent-green-500" />
-      </div>
-
-      {/* Damping */}
-      <div>
-        <label className="text-xs text-gray-400">阻尼: {store.damping.toFixed(3)}</label>
-        <input type="range" min={0} max={0.5} step={0.005}
-          value={store.damping}
-          onChange={e => store.setParam('damping', Number(e.target.value))}
-          className="w-full accent-yellow-500" />
-      </div>
-
-      {/* Bounce */}
-      <div>
-        <label className="text-xs text-gray-400">弹性: {store.bounce.toFixed(2)}</label>
-        <input type="range" min={0} max={1} step={0.05}
-          value={store.bounce}
-          onChange={e => store.setParam('bounce', Number(e.target.value))}
-          className="w-full accent-orange-500" />
-      </div>
-
-      {/* Attractor */}
-      <div>
-        <label className="text-xs text-gray-400">吸引力: {store.attractorStrength.toFixed(1)}</label>
-        <input type="range" min={0} max={20} step={0.5}
-          value={store.attractorStrength}
-          onChange={e => store.setParam('attractorStrength', Number(e.target.value))}
-          className="w-full accent-pink-500" />
-      </div>
-
-      {/* Controls */}
       <div className="flex gap-2 mt-2">
         <button
           onClick={() => store.setParam('paused', !store.paused)}
